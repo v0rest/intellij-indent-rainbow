@@ -3,13 +3,24 @@ package indent.rainbow.settings
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import indent.rainbow.IrColors
 import javax.swing.JLabel
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class IrConfigurable : BoundConfigurable("Indent Rainbow") {
+    private val config = IrConfig.INSTANCE
+
+    private var opacityMultiplierValue: Int
+        get() = (config.opacityMultiplier * 100).roundToInt()
+        set(value) {
+            // zero (default value) if value is almost default
+            config.opacityMultiplier = if (abs(value) < 5) {
+                0F
+            } else {
+                value / 100F
+            }
+        }
 
     override fun createPanel(): DialogPanel = panel {
         row {
@@ -66,7 +77,7 @@ class IrConfigurable : BoundConfigurable("Indent Rainbow") {
                 slider.component.value = opacityMultiplierValue
             }
         )
-        slider.horizontalAlign(HorizontalAlign.FILL)
+        slider.align(Align.FILL)
     }
 
     override fun apply() {
@@ -77,20 +88,5 @@ class IrConfigurable : BoundConfigurable("Indent Rainbow") {
         IrCachedData.update(config)
         IrColors.onSchemeChange()
         IrColors.refreshEditorIndentColors()
-    }
-
-    companion object {
-        private val config = IrConfig.INSTANCE
-
-        private var opacityMultiplierValue: Int
-            get() = (config.opacityMultiplier * 100).roundToInt()
-            set(value) {
-                // zero (default value) if value is almost default
-                config.opacityMultiplier = if (abs(value) < 5) {
-                    0F
-                } else {
-                    value / 100F
-                }
-            }
     }
 }
